@@ -19,6 +19,8 @@ import shutil
 import pickle
 import torch
 from autogluon.tabular import TabularPredictor
+from autogluon.features.generators import IdentityFeatureGenerator
+
 
 
 def load_saved_pipeline(saved_pipeline_dir, dataset, method):
@@ -89,13 +91,14 @@ def train_autogluon(X_train, y_train, X_val, y_val, X_test, y_test, time_limit, 
     if isinstance(y_test, torch.Tensor):
         y_test = y_test.numpy()
     
-    # Combine train and val for AutoGluon
-    X_train_combined = pd.concat([X_train, X_val], axis=0).reset_index(drop=True)
-    y_train_combined = np.concatenate([y_train, y_val])
-    
+    # Use only train data (do NOT combine with val)
     # Create training DataFrame
-    train_data = X_train_combined.copy()
-    train_data['label'] = y_train_combined
+    train_data = X_train.copy()
+    train_data['label'] = y_train
+    
+    # Create validation DataFrame (for tuning)
+    val_data = X_val.copy()
+    val_data['label'] = y_val
     
     # Create test DataFrame
     test_data = X_test.copy()
@@ -116,12 +119,14 @@ def train_autogluon(X_train, y_train, X_val, y_val, X_test, y_test, time_limit, 
             verbosity=0,
         )
         
-        # Train
+        # Train with separate validation set
         predictor.fit(
             train_data=train_data,
+            #tuning_data=val_data,  # Use val data for tuning/validation
             time_limit=time_limit,
             presets='best_quality',
-            verbosity=0
+            verbosity=0,
+            feature_generator=IdentityFeatureGenerator()
         )
         
         # Evaluate on test set
