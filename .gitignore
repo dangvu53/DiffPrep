@@ -129,3 +129,17 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Experiment results
+result/
+autogluon_results/
+text_datasets_summary.json
+kaggle_experiment_summary.json
+kaggle_results_*.zip
+
+# Dataset folders with numerical IDs (exclude new datasets)
+data/[0-9]*/
+data/[0-9][0-9]*/
+data/[0-9][0-9][0-9]*/
+data/[0-9][0-9][0-9][0-9]*/
+data/[0-9][0-9][0-9][0-9][0-9]*/

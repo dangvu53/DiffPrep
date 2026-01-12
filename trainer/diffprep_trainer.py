@@ -155,9 +155,9 @@ class DiffPrepSGD(object):
         X_train_batch, y_train_batch = take_random_batch(X_train, y_train, self.params["pipeline_update_sample_size"])
 
         if not self.prep_pipeline.is_fitted:
-            self.prep_pipeline.fit(X_train_batch)
+            self.prep_pipeline.fit(X_train_batch, y_train_batch)
         self.update_prep_pipeline(X_train_batch, y_train_batch, X_val_batch, y_val_batch)
-        self.prep_pipeline.fit(X_train_batch)
+        self.prep_pipeline.fit(X_train_batch, y_train_batch)
 
         tr_correct = 0
         tr_loss = 0

@@ -110,5 +110,5 @@ def run_diffprep(data_dir, dataset, result_dir, prep_space, params, model_name, 
     sample = "sample" if params["sample"] else "nosample"
     diff_prep_exp = DiffPrepExperiment(data_dir, dataset, prep_space, model_name, method)
     best_result, best_model, best_logger, best_params = grid_search(diff_prep_exp, deepcopy(params))
-    save_result(best_result, best_model, best_logger, best_params, result_dir, save_model=False)
+    save_result(best_result, best_model, best_logger, best_params, result_dir, save_model=True)
     print("DiffPrep Finished. val acc:", best_result["best_val_acc"], "test acc", best_result["best_test_acc"])

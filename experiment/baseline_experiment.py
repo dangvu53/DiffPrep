@@ -29,7 +29,7 @@ class BaselineExperiment(object):
         
         # data prep pipeline
         prep_pipeline = BaselinePipeline(self.method, self.prep_space, self.tf_seed)
-        X_train = prep_pipeline.fit_transform(X_train, X_val, X_test)
+        X_train = prep_pipeline.fit_transform(X_train, X_val, X_test, y_train)
         X_val = prep_pipeline.transform(X_val)
         X_test = prep_pipeline.transform(X_test)
 

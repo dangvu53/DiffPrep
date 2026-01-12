@@ -65,12 +65,17 @@ class Transformer(nn.Module):
         X_sample_grad = np.clip(X_sample_grad, -10, 10)
         return torch.Tensor(X_sample_grad)
 
-    def forward(self, X, is_fit, X_type, max_only=False, require_grad=True, alpha=None):
+    def forward(self, X, is_fit, X_type, y=None, max_only=False, require_grad=True, alpha=None):
         # train tfs
         X_trans = []
         for tf in self.tf_options:
             if is_fit:
-                X_t = tf.fit_transform(X.detach().numpy()) # transformer sample change, X_output change
+                # Pass y to fit_transform if available (for feature selection)
+                if hasattr(tf, 'fit') and 'y' in tf.fit.__code__.co_varnames:
+                    tf.fit(X.detach().numpy(), y=y.detach().numpy() if y is not None else None)
+                    X_t = tf.transform(X.detach().numpy())
+                else:
+                    X_t = tf.fit_transform(X.detach().numpy()) # transformer sample change, X_output change
             else:
                 X_t = tf.transform(X.detach().numpy())
 
@@ -209,15 +214,24 @@ class FirstTransformer(Transformer):
                     X_num_t, X_cat_t = tf.fit_transform(X_num.values, X_cat.values)
                     X_cat_trans.append(X_cat_t)
 
-            # fit one hot encoder on all results of X_cat
-            self.one_hot_encoder = OneHotEncoder(handle_unknown="ignore", sparse=False)
-            X_cat_trans_concat = np.vstack(X_cat_trans)
-            self.one_hot_encoder.fit(X_cat_trans_concat)
-            X_cat_trans_enc = []
-            for X_cat_t in X_cat_trans:
-                X_cat_trans_enc.append(self.one_hot_encoder.transform(X_cat_t))
-
-            X_cat_trans = torch.Tensor(np.array(X_cat_trans_enc)).permute(1, 2, 0) # shape (num_examples, num_features, num_tfs)
+            # Apply OneHotEncoder to convert categorical to numeric (one-hot encoding)
+            X_cat_trans_array = np.array(X_cat_trans)
+            num_tfs, num_examples, num_cat_features = X_cat_trans_array.shape
+            
+            try:
+                self.cat_encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
+            except TypeError:
+                self.cat_encoder = OneHotEncoder(handle_unknown='ignore', sparse=False)
+            X_cat_flat = X_cat_trans_array.reshape(-1, num_cat_features)
+            self.cat_encoder.fit(X_cat_flat)
+            
+            # Encode each transformation and store in new list
+            X_cat_trans_encoded = []
+            for i in range(num_tfs):
+                X_cat_encoded = self.cat_encoder.transform(X_cat_trans_array[i])
+                X_cat_trans_encoded.append(X_cat_encoded)
+            
+            X_cat_trans = torch.Tensor(np.array(X_cat_trans_encoded)).permute(1, 2, 0) # shape (num_examples, num_encoded_features, num_tfs)
             self.cache["train"]["X_cat_trans"] = X_cat_trans
             self.out_cat_features = X_cat_trans.shape[1]
 
@@ -228,7 +242,8 @@ class FirstTransformer(Transformer):
     def get_feature_names(self):
         num_feature_names = [c for c in self.num_columns]
         if self.contain_cat:
-            cat_feature_names = [c for c in self.one_hot_encoder.get_feature_names_out(self.cat_columns)]
+            # Use original categorical column names
+            cat_feature_names = [c for c in self.cat_columns]
         else:
             cat_feature_names = []
 
@@ -284,14 +299,23 @@ class FirstTransformer(Transformer):
             for tf in self.cat_tf_options:
                 if tf.input_type == "categorical":
                     X_cat_t = tf.transform(X_cat.values)
-                    X_cat_t = self.one_hot_encoder.transform(X_cat_t)
                     X_cat_trans.append(X_cat_t)
                 else:
                     X_num_t, X_cat_t = tf.transform(X_num.values, X_cat.values)
-                    X_cat_t = self.one_hot_encoder.transform(X_cat_t)
                     X_cat_trans.append(X_cat_t)
 
-            X_cat_trans = torch.Tensor(np.array(X_cat_trans)).permute(1, 2, 0) # shape (num_examples, num_features, num_tfs)
+            # Apply OneHotEncoder to categorical features
+            X_cat_trans_array = np.array(X_cat_trans)
+            num_tfs = len(X_cat_trans)
+            
+            # Encode each transformation - dimensions will expand
+            X_cat_encoded_list = []
+            for i in range(num_tfs):
+                X_cat_encoded = self.cat_encoder.transform(X_cat_trans_array[i])
+                X_cat_encoded_list.append(X_cat_encoded)
+            
+            X_cat_trans_array = np.array(X_cat_encoded_list)
+            X_cat_trans = torch.Tensor(X_cat_trans_array).permute(1, 2, 0) # shape (num_examples, num_features, num_tfs)
 
         return X_num_trans, X_cat_trans
 
@@ -465,7 +489,7 @@ class DiffPrepFlexPipeline(nn.Module):
         self.alpha_probs = sinkhorn(self.alpha)
 
 
-    def forward(self, X, is_fit, X_type, resample=False, max_only=False, require_grad=True):
+    def forward(self, X, is_fit, X_type, y=None, resample=False, max_only=False, require_grad=True):
         X_output = deepcopy(X)
         # do first step
         transformer = self.pipeline[0]
@@ -494,8 +518,8 @@ class DiffPrepFlexPipeline(nn.Module):
                     # if i == 0:
                     transformer.sample(temperature=self.temperature, use_sample=self.use_sample)
 
-                # forward
-                X_output_i += transformer(X_output, is_fit, X_type, max_only=max_only, require_grad=require_grad, alpha=self.alpha_probs[:, i, j])
+                # forward - pass y to transformers
+                X_output_i += transformer(X_output, is_fit, X_type, y=y, max_only=max_only, require_grad=require_grad, alpha=self.alpha_probs[:, i, j])
                 cur_idx += 1
                 
                 # print(X_output_i.max())
@@ -504,9 +528,9 @@ class DiffPrepFlexPipeline(nn.Module):
         
         return X_output
 
-    def fit(self, X):
+    def fit(self, X, y=None):
         self.is_fitted = True
-        return self.forward(X, is_fit=True, X_type="train", resample=True)
+        return self.forward(X, is_fit=True, X_type="train", y=y, resample=True)
 
     def transform(self, X, X_type, max_only=False, resample=False, require_grad=True):
         "max_only: only do transformer with prob > 0.5 and tf with maximum prob"

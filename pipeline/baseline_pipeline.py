@@ -19,12 +19,17 @@ class Transformer(object):
         self.tf_probs = np.zeros((len(tf_idx_choices), self.num_options)) # feature * num_options
         self.tf_probs[range(len(tf_idx_choices)), tf_idx_choices] = 1 # (features,)
 
-    def forward(self, X, is_fit):
+    def forward(self, X, is_fit, y=None):
         # train tfs
         X_trans = []
         for tf in self.tf_options:
             if is_fit:
-                X_t = tf.fit_transform(X) # transformer sample change, X_output change
+                # Pass y to fit_transform if available (for feature selection)
+                if hasattr(tf, 'fit') and 'y' in tf.fit.__code__.co_varnames:
+                    tf.fit(X, y=y)
+                    X_t = tf.transform(X)
+                else:
+                    X_t = tf.fit_transform(X) # transformer sample change, X_output change
             else:
                 X_t = tf.transform(X)
 
@@ -65,6 +70,12 @@ class BaselineFirstTransformer(object):
 
         self.num_tf_idx_choices = num_tf_idx_choices
         self.cat_tf_idx_choices = cat_tf_idx_choices
+        
+        self.out_num_features = 0
+        self.out_cat_features = 0
+        self.out_features = 0
+        self.feature_names = []
+        self.cat_encoder = None  # OneHotEncoder for categorical features
 
     def fit_transform(self, X):
         """ Train transformers and Initialize parameters
@@ -115,15 +126,24 @@ class BaselineFirstTransformer(object):
                     X_num_t, X_cat_t = tf.fit_transform(X_num.values, X_cat.values)
                     X_cat_trans.append(X_cat_t)
 
-            # fit one hot encoder on all results of X_cat
-            self.one_hot_encoder = OneHotEncoder(handle_unknown="ignore", sparse=False)
-            X_cat_trans_concat = np.vstack(X_cat_trans)
-            self.one_hot_encoder.fit(X_cat_trans_concat)
-
-            X_cat_trans_enc = []
-            for X_cat_t in X_cat_trans:
-                X_cat_trans_enc.append(self.one_hot_encoder.transform(X_cat_t))
-            X_cat_trans = np.transpose(np.array(X_cat_trans_enc), (1, 2, 0)) # shape (num_examples, num_features, num_tfs)
+            # Apply OneHotEncoder to convert categorical to numeric (one-hot encoding)
+            X_cat_trans_array = np.array(X_cat_trans)  # shape (num_tfs, num_examples, num_features)
+            num_tfs, num_examples, num_cat_features = X_cat_trans_array.shape
+            
+            try:
+                self.cat_encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
+            except TypeError:
+                self.cat_encoder = OneHotEncoder(handle_unknown='ignore', sparse=False)
+            X_cat_flat = X_cat_trans_array.reshape(-1, num_cat_features)
+            self.cat_encoder.fit(X_cat_flat)
+            
+            # Encode each transformation and store in new list
+            X_cat_trans_encoded = []
+            for i in range(num_tfs):
+                X_cat_encoded = self.cat_encoder.transform(X_cat_trans_array[i])
+                X_cat_trans_encoded.append(X_cat_encoded)
+            
+            X_cat_trans = np.transpose(np.array(X_cat_trans_encoded), (1, 2, 0)) # shape (num_examples, num_encoded_features, num_tfs)
 
             self.cat_tf_probs = np.zeros((X_cat_trans.shape[1], X_cat_trans.shape[2])) # num_feature * num_options
 
@@ -146,7 +166,8 @@ class BaselineFirstTransformer(object):
     def get_feature_names(self):
         num_feature_names = [c for c in self.num_columns]
         if self.contain_cat:
-            cat_feature_names = [c for c in self.one_hot_encoder.get_feature_names_out(self.cat_columns)]
+            # Use original categorical column names
+            cat_feature_names = [c for c in self.cat_columns]
         else:
             cat_feature_names = []
 
@@ -154,16 +175,8 @@ class BaselineFirstTransformer(object):
         return feature_names
 
     def get_feature_enc_map(self, num_cat_features):
-        # original feature idx to feature indices after one hot encoding
-        feature_names = self.one_hot_encoder.get_feature_names_out([str(i) for i in range(num_cat_features)])
-        idx_map = {}
-        for cur_idx, name in enumerate(feature_names):
-            org_idx = int(name.split("_")[0])
-            if org_idx not in idx_map:
-                idx_map[org_idx] = [cur_idx]
-            else:
-                idx_map[org_idx].append(cur_idx)
-        return idx_map
+        # No encoding maintains original column count (1-to-1 mapping)
+        return {i: [i] for i in range(num_cat_features)}
 
     def forward(self, X, is_fit=False):
         X_num = X[self.num_columns]
@@ -192,15 +205,24 @@ class BaselineFirstTransformer(object):
             for tf in self.cat_tf_options:
                 if tf.input_type == "categorical":
                     X_cat_t = tf.transform(X_cat.values)
-                    X_cat_t = self.one_hot_encoder.transform(X_cat_t)
                     X_cat_trans.append(X_cat_t)
 
                 if tf.input_type == "mixed":
                     X_num_t, X_cat_t = tf.transform(X_num.values, X_cat.values)
-                    X_cat_t = self.one_hot_encoder.transform(X_cat_t)
                     X_cat_trans.append(X_cat_t)
 
-            X_cat_trans = np.transpose(np.array(X_cat_trans), (1, 2, 0)) # shape (num_examples, num_features, num_tfs)
+            # Apply OneHotEncoder to categorical features
+            X_cat_trans_array = np.array(X_cat_trans)
+            num_tfs = len(X_cat_trans)
+            
+            # Encode each transformation - dimensions will expand
+            X_cat_encoded_list = []
+            for i in range(num_tfs):
+                X_cat_encoded = self.cat_encoder.transform(X_cat_trans_array[i])
+                X_cat_encoded_list.append(X_cat_encoded)
+            
+            X_cat_trans_array = np.array(X_cat_encoded_list)
+            X_cat_trans = np.transpose(X_cat_trans_array, (1, 2, 0)) # shape (num_examples, num_encoded_features, num_tfs)
             X_cat_trans_sample = np.sum(X_cat_trans * np.expand_dims(self.cat_tf_probs, axis=0), axis=2)
 
         X_output = self.concat_num_cat(X_num_trans_sample, X_cat_trans_sample)
@@ -236,7 +258,7 @@ class BaselinePipeline(object):
         self.prep_space = prep_space
         self.random_state = random_state
 
-    def fit_transform(self, X_train, X_val, X_test):
+    def fit_transform(self, X_train, X_val, X_test, y_train=None):
         np.random.seed(self.random_state)
         self.pipeline = []
 
@@ -280,7 +302,7 @@ class BaselinePipeline(object):
                 tf_options = tf_dict['tf_options']
 
             transformer = Transformer(tf_dict['name'], tf_options, X_trans.shape[1])
-            X_trans = transformer.forward(X_trans, is_fit=True)
+            X_trans = transformer.forward(X_trans, is_fit=True, y=y_train.values if y_train is not None else None)
             self.pipeline.append(transformer)
 
         return X_trans

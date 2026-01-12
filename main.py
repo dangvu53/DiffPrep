@@ -1,7 +1,7 @@
 import utils
 import argparse
 import time
-from prep_space import space
+from prep_space_new import space  # Using new PreprocessorOps operators
 from experiment.baseline_experiment import run_baseline
 from experiment.diffprep_experiment import run_diffprep
 import torch
