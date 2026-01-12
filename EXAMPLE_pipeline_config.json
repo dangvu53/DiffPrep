@@ -1,0 +1,27 @@
+{
+    "first_transformer.num_tf_prob_logits": {
+        "most_probable_indices": [0, 1, 0, 2, 0, 1, 0, 1],
+        "probabilities_shape": [8, 7],
+        "note": "Index indicates which transformation method is most likely for each feature"
+    },
+    "first_transformer.cat_tf_prob_logits": {
+        "most_probable_indices": [1, 0],
+        "probabilities_shape": [2, 4],
+        "note": "Index indicates which transformation method is most likely for each feature"
+    },
+    "transformers.0.tf_prob_logits": {
+        "most_probable_indices": [2, 2, 1, 2, 2, 2, 1, 2],
+        "probabilities_shape": [8, 5],
+        "note": "Index indicates which transformation method is most likely for each feature"
+    },
+    "transformers.1.tf_prob_logits": {
+        "most_probable_indices": [0, 0, 0, 0, 0, 0, 0, 0],
+        "probabilities_shape": [8, 10],
+        "note": "Index indicates which transformation method is most likely for each feature"
+    },
+    "transformers.2.tf_prob_logits": {
+        "most_probable_indices": [4, 4, 4, 4, 4, 4, 4, 4],
+        "probabilities_shape": [8, 7],
+        "note": "Index indicates which transformation method is most likely for each feature"
+    }
+}

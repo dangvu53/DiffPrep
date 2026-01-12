@@ -200,7 +200,7 @@ class FirstTransformer(Transformer):
                     X_cat_trans.append(X_cat_t)
 
             # fit one hot encoder on all results of X_cat
-            self.one_hot_encoder = OneHotEncoder(handle_unknown="ignore", sparse=False)
+            self.one_hot_encoder = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
             X_cat_trans_concat = np.vstack(X_cat_trans)
             self.one_hot_encoder.fit(X_cat_trans_concat)
             X_cat_trans_enc = []
