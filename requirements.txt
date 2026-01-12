@@ -23,7 +23,7 @@ lightgbm==4.6.0
 matplotlib==3.9.4
 narwhals==2.15.0
 networkx==3.2.1
-numpy==1.25.2
+#numpy==1.25.2
 packaging==23.1
 pandas==2.3.3
 patsy==1.0.2
