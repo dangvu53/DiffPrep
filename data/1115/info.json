@@ -1,0 +1,13 @@
+{
+  "label": "label",
+  "dataset_name": "teachingAssistant",
+  "task_type": "classification",
+  "openml_id": 1115,
+  "num_samples": 151,
+  "num_features": 6,
+  "num_classes": 3,
+  "num_missing_values": 0,
+  "missing_percentage": 0.0,
+  "num_outlier_samples": 0,
+  "outlier_percentage": 0.0
+}

@@ -1,0 +1,13 @@
+{
+  "label": "label",
+  "dataset_name": "eucalyptus",
+  "task_type": "classification",
+  "openml_id": 188,
+  "num_samples": 736,
+  "num_features": 19,
+  "num_classes": 5,
+  "num_missing_values": 448,
+  "missing_percentage": 3.2,
+  "num_outlier_samples": 268,
+  "outlier_percentage": 36.41
+}

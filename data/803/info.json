@@ -1,0 +1,13 @@
+{
+  "label": "label",
+  "dataset_name": "delta_ailerons",
+  "task_type": "classification",
+  "openml_id": 803,
+  "num_samples": 5000,
+  "num_features": 5,
+  "num_classes": 2,
+  "num_missing_values": 0,
+  "missing_percentage": 0.0,
+  "num_outlier_samples": 151,
+  "outlier_percentage": 3.02
+}

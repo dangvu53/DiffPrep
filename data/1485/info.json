@@ -1,0 +1,13 @@
+{
+  "label": "label",
+  "dataset_name": "madelon",
+  "task_type": "classification",
+  "openml_id": 1485,
+  "num_samples": 2600,
+  "num_features": 500,
+  "num_classes": 2,
+  "num_missing_values": 0,
+  "missing_percentage": 0.0,
+  "num_outlier_samples": 13571,
+  "outlier_percentage": 521.96
+}

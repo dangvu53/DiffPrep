@@ -1,0 +1,13 @@
+{
+  "label": "label",
+  "dataset_name": "space_ga",
+  "task_type": "classification",
+  "openml_id": 737,
+  "num_samples": 3107,
+  "num_features": 6,
+  "num_classes": 2,
+  "num_missing_values": 0,
+  "missing_percentage": 0.0,
+  "num_outlier_samples": 42,
+  "outlier_percentage": 1.35
+}

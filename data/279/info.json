@@ -1,0 +1,13 @@
+{
+  "label": "label",
+  "dataset_name": "meta_stream_intervals.arff",
+  "task_type": "classification",
+  "openml_id": 279,
+  "num_samples": 5000,
+  "num_features": 74,
+  "num_classes": 11,
+  "num_missing_values": 0,
+  "missing_percentage": 0.0,
+  "num_outlier_samples": 1380,
+  "outlier_percentage": 27.6
+}

@@ -1,0 +1,13 @@
+{
+  "label": "label",
+  "dataset_name": "BNG(bridges_version1)",
+  "task_type": "classification",
+  "openml_id": 253,
+  "num_samples": 5000,
+  "num_features": 12,
+  "num_classes": 6,
+  "num_missing_values": 0,
+  "missing_percentage": 0.0,
+  "num_outlier_samples": 76,
+  "outlier_percentage": 1.52
+}

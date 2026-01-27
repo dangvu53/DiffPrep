@@ -1,0 +1,13 @@
+{
+  "label": "label",
+  "dataset_name": "isolet",
+  "task_type": "classification",
+  "openml_id": 300,
+  "num_samples": 7797,
+  "num_features": 617,
+  "num_classes": 26,
+  "num_missing_values": 0,
+  "missing_percentage": 0.0,
+  "num_outlier_samples": 124512,
+  "outlier_percentage": 1596.92
+}

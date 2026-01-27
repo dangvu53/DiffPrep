@@ -1,0 +1,13 @@
+{
+  "label": "label",
+  "dataset_name": "UNIX_user_data",
+  "task_type": "classification",
+  "openml_id": 373,
+  "num_samples": 5000,
+  "num_features": 2,
+  "num_classes": 9,
+  "num_missing_values": 0,
+  "missing_percentage": 0.0,
+  "num_outlier_samples": 62,
+  "outlier_percentage": 1.24
+}
