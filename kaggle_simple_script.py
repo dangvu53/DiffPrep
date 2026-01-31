@@ -35,8 +35,11 @@ print(f"Total datasets: {len(datasets)}")
 print(f"{'='*80}\n")
 
 for idx, dataset in enumerate(datasets, 1):
+    # Convert dataset to string to handle numeric IDs
+    dataset_str = str(dataset)
+    
     print(f"\n{'#'*80}")
-    print(f"# [{idx}/{len(datasets)}] Processing: {dataset}")
+    print(f"# [{idx}/{len(datasets)}] Processing: {dataset_str}")
     print(f"# Completed: {len([r for r in results.values() if 'SUCCESS' in r])}")
     print(f"{'#'*80}\n")
     
@@ -47,7 +50,7 @@ for idx, dataset in enumerate(datasets, 1):
         print(f"[1/3] Running {METHOD} experiment...")
         subprocess.run([
             'python', 'main.py',
-            '--dataset', dataset,
+            '--dataset', dataset_str,
             '--method', METHOD,
             '--model', 'log',
             '--split_seed', str(SPLIT_SEED),
@@ -58,7 +61,7 @@ for idx, dataset in enumerate(datasets, 1):
         print(f"\n[2/3] Extracting pipeline...")
         subprocess.run([
             'python', 'extract_and_save_pipeline.py',
-            '--dataset', dataset,
+            '--dataset', dataset_str,
             '--method', METHOD,
         ], check=True)
         
@@ -66,27 +69,27 @@ for idx, dataset in enumerate(datasets, 1):
         print(f"\n[3/3] Running AutoGluon evaluation...")
         subprocess.run([
             'python', 'evaluate_with_autogluon_v2.py',
-            '--dataset', dataset,
+            '--dataset', dataset_str,
             '--method', METHOD,
             '--time_limit', str(AUTOGLUON_TIME_LIMIT)
         ], check=True)
         
         elapsed = time.time() - dataset_start
-        results[dataset] = f"SUCCESS ({elapsed:.1f}s)"
-        print(f"\n✅ {dataset} completed in {elapsed:.1f}s ({elapsed/60:.1f} min)")
+        results[dataset_str] = f"SUCCESS ({elapsed:.1f}s)"
+        print(f"\n✅ {dataset_str} completed in {elapsed:.1f}s ({elapsed/60:.1f} min)")
         
     except subprocess.CalledProcessError as e:
         elapsed = time.time() - dataset_start
         error_msg = f"FAILED at command: {e.cmd}"
-        results[dataset] = error_msg
-        print(f"\n❌ {dataset} failed after {elapsed:.1f}s")
+        results[dataset_str] = error_msg
+        print(f"\n❌ {dataset_str} failed after {elapsed:.1f}s")
         print(f"Error: {error_msg}")
         
     except Exception as e:
         elapsed = time.time() - dataset_start
         error_msg = f"FAILED: {str(e)}"
-        results[dataset] = error_msg
-        print(f"\n❌ {dataset} failed after {elapsed:.1f}s")
+        results[dataset_str] = error_msg
+        print(f"\n❌ {dataset_str} failed after {elapsed:.1f}s")
         print(f"Error: {error_msg}")
 
 # Save results summary

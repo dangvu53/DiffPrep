@@ -129,12 +129,27 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-# Data folders with numeric IDs
-data/[0-9]*/
-data/[0-9][0-9]*/
-data/[0-9][0-9][0-9]*/
-data/[0-9][0-9][0-9][0-9]*/
-data/[0-9][0-9][0-9][0-9][0-9]*/
+
+# Data folders - Allow numeric IDs, ignore named datasets
+data/abalone/
+data/ada_prior/
+data/avila/
+data/connect-4/
+data/eeg/
+data/google/
+data/house_prices/
+data/jungle_chess_2pcs_raw_endgame_complete/
+data/microaggregation2/
+data/mozilla4/
+data/obesity/
+data/page-blocks/
+data/pbcseq/
+data/pol/
+data/Run_or_walk_information/
+data/shuttle/
+data/USCensus/
+data/wall-robot-navigation/
+data/*.zip
 
 # Experiment results
 result/
