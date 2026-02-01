@@ -24,43 +24,13 @@ def load_openml_dataset(dataset_id, test_dataset_ids=None):
             else:
                 raise e
 
-        X = dataset.data
+        X = dataset.data.copy()
         y = dataset.target
 
-        # Convert sparse matrix to DataFrame if needed
-        if not isinstance(X, pd.DataFrame):
-            # Handle sparse matrices
-            from scipy.sparse import issparse
-            if issparse(X):
-                X = pd.DataFrame.sparse.from_spmatrix(X)
-            else:
-                # Convert numpy array to DataFrame
-                X = pd.DataFrame(X)
-            
-            # Generate column names if not present
-            if not hasattr(dataset, 'feature_names') or dataset.feature_names is None:
-                X.columns = [f'feature_{i}' for i in range(X.shape[1])]
-            else:
-                X.columns = dataset.feature_names
-        else:
-            X = X.copy()
-        
-        # Convert target to Series if it's not already
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
-        
-        # Clean target data - remove invalid values (NaN, inf, extremely large values)
-        if np.issubdtype(y.dtype, np.number):
-            # Replace invalid numeric values with NaN
-            y = y.replace([np.inf, -np.inf], np.nan)
-            # Check for overflow values (likely from invalid casting)
-            overflow_mask = (y.abs() > 1e15) if y.dtype.kind in 'fc' else (y.abs() > 2**62)
-            if overflow_mask.any():
-                y[overflow_mask] = np.nan
-        
         # Handle categorical features properly
-        for col in X.select_dtypes(include=['object', 'category']).columns:
-            X[col] = X[col].astype(str)
+        if isinstance(X, pd.DataFrame):
+            for col in X.select_dtypes(include=['object', 'category']).columns:
+                X[col] = X[col].astype(str)
 
         # Handle target encoding
         if y.dtype == 'object' or y.dtype.name == 'category':
@@ -72,10 +42,6 @@ def load_openml_dataset(dataset_id, test_dataset_ids=None):
         mask = ~pd.isna(y)
         X = X[mask].reset_index(drop=True)
         y = y[mask].reset_index(drop=True)
-        
-        # Check if we have any valid samples left
-        if len(X) == 0:
-            raise ValueError("No valid samples remaining after cleaning")
 
         # Detect problem type
         if y.nunique() > 50 and y.dtype.kind in "iufc":
@@ -307,11 +273,11 @@ if __name__ == "__main__":
     
     # Example dataset IDs (you can add more)
     dataset_ids_to_fetch = [
-        1457,   # amazon-commerce-reviews
-        1458,   # arcene
-        4136,   # dexter
-        41026,  # gisette
-        1485,   # madelon
+        # 1457,   # amazon-commerce-reviews
+        # 1458,   # arcene
+        # 4136,   # dexter
+        # 41026,  # gisette
+        # 1485,   # madelon
         1111,   # KDDCup09_appetency
         43072,  # KDDCup09_upselling
         554,    # mnist_784
