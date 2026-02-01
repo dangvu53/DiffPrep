@@ -3,11 +3,11 @@
   "dataset_name": "BNG(anneal)",
   "task_type": "classification",
   "openml_id": 244,
-  "num_samples": 5000,
+  "num_samples": 100000,
   "num_features": 38,
   "num_classes": 6,
   "num_missing_values": 0,
   "missing_percentage": 0.0,
-  "num_outlier_samples": 593,
-  "outlier_percentage": 11.86
+  "num_outlier_samples": 61937,
+  "outlier_percentage": 1.63
 }

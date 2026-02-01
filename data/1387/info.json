@@ -3,7 +3,7 @@
   "dataset_name": "BNG(audiology,1000,1)",
   "task_type": "classification",
   "openml_id": 1387,
-  "num_samples": 5000,
+  "num_samples": 100000,
   "num_features": 69,
   "num_classes": 24,
   "num_missing_values": 0,

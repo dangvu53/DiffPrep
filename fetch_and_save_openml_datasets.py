@@ -102,7 +102,7 @@ def calculate_dataset_stats(X, y, task_type):
                 outliers = ((X[col] < (Q1 - 1.5 * IQR)) | (X[col] > (Q3 + 1.5 * IQR))) & X[col].notna()
                 num_outliers += outliers.sum()
     
-    outlier_percentage = round((num_outliers / X.shape[0]) * 100, 2) if X.shape[0] > 0 else 0.0
+    outlier_percentage = round((num_outliers / total_values) * 100, 2) if total_values > 0 else 0.0
     
     # Number of classes (only for classification)
     num_classes = len(np.unique(y)) if task_type == 'classification' else None
@@ -113,7 +113,7 @@ def calculate_dataset_stats(X, y, task_type):
         'num_classes': int(num_classes) if num_classes is not None else None,
         'num_missing_values': int(num_missing),
         'missing_percentage': float(missing_percentage),
-        'num_outlier_samples': int(num_outliers),
+        'num_outlier_cells': int(num_outliers),
         'outlier_percentage': float(outlier_percentage)
     }
 
@@ -164,7 +164,7 @@ def save_dataset(dataset_info, save_dir='data'):
     info.update({
         'num_missing_values': stats['num_missing_values'],
         'missing_percentage': stats['missing_percentage'],
-        'num_outlier_samples': stats['num_outlier_samples'],
+        'num_outlier_cells': stats['num_outlier_cells'],
         'outlier_percentage': stats['outlier_percentage']
     })
     
@@ -239,16 +239,18 @@ if __name__ == "__main__":
     
     # Example dataset IDs (you can add more)
     dataset_ids_to_fetch = [
-        # 31,    # credit-g
-        # 3,     # kr-vs-kp  
-        # 1485,  # madelon
-        # 23512, # higgs
-        # 42769, # Bioresponse
+        40975, 1233, 1115, 1466, 248, 279, 40740, 803, 942, 373, 
+        1518, 737, 1396, 1399, 823, 253, 922, 7, 1066, 1164, 932,
+        974, 1047, 991, 244, 1400, 862, 40520, 2, 40663, 1054,
+        1387, 1397, 1401, 1393, 728, 876, 1358, 75, 18
     ]
     
     # Or fetch specific test datasets with larger sample limit
     test_dataset_ids = [
-        # 23512,  # higgs (will allow up to 100k samples)
+        40975, 1233, 1115, 1466, 248, 279, 40740, 803, 942, 373, 
+        1518, 737, 1396, 1399, 823, 253, 922, 7, 1066, 1164, 932,
+        974, 1047, 991, 244, 1400, 862, 40520, 2, 40663, 1054,
+        1387, 1397, 1401, 1393, 728, 876, 1358, 75, 18    
     ]
     
     if not dataset_ids_to_fetch:

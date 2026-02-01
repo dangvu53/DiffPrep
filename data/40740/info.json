@@ -8,6 +8,6 @@
   "num_classes": 2,
   "num_missing_values": 0,
   "missing_percentage": 0.0,
-  "num_outlier_samples": 4,
-  "outlier_percentage": 28.57
+  "num_outlier_samples": 21,
+  "outlier_percentage": 6.82
 }

@@ -6,8 +6,8 @@
   "num_samples": 191,
   "num_features": 16,
   "num_classes": 4,
-  "num_missing_values": 0,
-  "missing_percentage": 0.0,
-  "num_outlier_samples": 1,
-  "outlier_percentage": 0.52
+  "num_missing_values": 54,
+  "missing_percentage": 1.77,
+  "num_outlier_samples": 117,
+  "outlier_percentage": 3.83
 }
