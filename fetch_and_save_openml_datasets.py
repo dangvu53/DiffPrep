@@ -195,14 +195,48 @@ def fetch_and_save_datasets(dataset_ids, save_dir='data', test_dataset_ids=None)
     for dataset_id in dataset_ids:
         print(f"\nProcessing dataset {dataset_id}...")
         
-        # Check if dataset already exists
+        # Check if data.csv already exists
         dataset_dir = os.path.join(save_dir, str(dataset_id))
-        if os.path.exists(dataset_dir):
-            print(f"  Dataset {dataset_id} already exists in {dataset_dir}. Skipping...")
-            successful.append(dataset_id)
+        csv_path = os.path.join(dataset_dir, 'data.csv')
+        
+        if os.path.exists(csv_path):
+            print(f"  data.csv exists. Regenerating info.json...")
+            try:
+                # Load existing data
+                data_df = pd.read_csv(csv_path)
+                X = data_df.drop(columns=['label'])
+                y = data_df['label']
+                
+                # Load existing info to get metadata
+                info_path = os.path.join(dataset_dir, 'info.json')
+                if os.path.exists(info_path):
+                    with open(info_path, 'r') as f:
+                        info = json.load(f)
+                    dataset_name = info.get('dataset_name', str(dataset_id))
+                    task_type = info.get('task_type', 'classification')
+                else:
+                    dataset_name = str(dataset_id)
+                    task_type = 'classification'
+                
+                # Create dataset_info dict
+                dataset_info = {
+                    'id': dataset_id,
+                    'name': dataset_name,
+                    'X': X,
+                    'y': y,
+                    'task_type': task_type
+                }
+                
+                # Regenerate info.json with correct formulas
+                save_dataset(dataset_info, save_dir)
+                successful.append(dataset_id)
+                print(f"  Successfully regenerated info.json")
+            except Exception as e:
+                print(f"  Failed to regenerate info.json: {e}")
+                failed.append(dataset_id)
             continue
         
-        # Load dataset
+        # Load dataset from OpenML
         dataset_info = load_openml_dataset(dataset_id, test_dataset_ids)
         
         if dataset_info is None:
