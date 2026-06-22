@@ -11,7 +11,6 @@ import pickle
 import torch
 import numpy as np
 from torch.distributions.utils import logits_to_probs
-import sys
 
 
 def get_transformation_name(tf):
@@ -21,53 +20,12 @@ def get_transformation_name(tf):
 
 def extract_pipeline_config(pipeline_path):
     """Extract the preprocessing configuration from a saved pipeline."""
-    
-    # Set up numpy._core compatibility module if needed
-    if not hasattr(np, '_core'):
-        import types
-        np._core = types.ModuleType('numpy._core')
-        np._core.multiarray = np.core.multiarray
-        sys.modules['numpy._core'] = np._core
-        sys.modules['numpy._core.multiarray'] = np.core.multiarray
-    
-    # Create stub classes for NumPy 2.x random generators
-    if not hasattr(sys.modules.get('numpy.random', {}), '_mt19937'):
-        import types
-        mt19937_module = types.ModuleType('numpy.random._mt19937')
-        
-        # Create a stub MT19937 class that can be unpickled
-        class MT19937Stub:
-            def __init__(self, *args, **kwargs):
-                pass
-            def __setstate__(self, state):
-                pass
-        
-        mt19937_module.MT19937 = MT19937Stub
-        sys.modules['numpy.random._mt19937'] = mt19937_module
-    
-    # Custom unpickler to handle numpy version compatibility
-    class NumpyUnpickler(pickle.Unpickler):
-        def find_class(self, module, name):
-            # Handle NumPy 2.x to 1.x compatibility
-            if module == 'numpy._core.multiarray':
-                module = 'numpy.core.multiarray'
-            elif module.startswith('numpy._core'):
-                module = module.replace('numpy._core', 'numpy.core')
-            return super().find_class(module, name)
-    
-    # Load the pipeline with compatibility settings
-    try:
-        with open(pipeline_path, 'rb') as f:
-            pipeline = NumpyUnpickler(f).load()
-    except Exception as e1:
-        print(f"[WARNING] First attempt failed: {e1}")
-        print("[INFO] Trying alternative loading method...")
-        try:
-            with open(pipeline_path, 'rb') as f:
-                pipeline = pickle.load(f, encoding='latin1')
-        except Exception as e2:
-            print(f"[ERROR] Alternative method also failed: {e2}")
-            raise
+
+    # This pickle was created by another subprocess in the same environment.
+    # Never replace numpy.random._mt19937 with a stub: scipy/sklearn require
+    # the real extension type and its C-level ``capsule`` attribute.
+    with open(pipeline_path, 'rb') as f:
+        pipeline = pickle.load(f)
     
     print("\n" + "="*80)
     print("LEARNED PREPROCESSING PIPELINE")

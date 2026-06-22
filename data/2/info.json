@@ -1,0 +1,13 @@
+{
+  "label": "label",
+  "dataset_name": "anneal",
+  "task_type": "classification",
+  "openml_id": 2,
+  "num_samples": 898,
+  "num_features": 38,
+  "num_classes": 5,
+  "num_missing_values": 0,
+  "missing_percentage": 0.0,
+  "num_outlier_samples": 104,
+  "outlier_percentage": 11.58
+}

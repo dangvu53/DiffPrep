@@ -1,0 +1,13 @@
+{
+  "label": "label",
+  "dataset_name": "ipums_la_99-small",
+  "task_type": "classification",
+  "openml_id": 378,
+  "num_samples": 8844,
+  "num_features": 60,
+  "num_classes": 7,
+  "num_missing_values": 0,
+  "missing_percentage": 0.0,
+  "num_outlier_samples": 0,
+  "outlier_percentage": 0.0
+}

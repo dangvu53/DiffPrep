@@ -63,6 +63,7 @@ for idx, dataset in enumerate(datasets, 1):
             'python', 'extract_and_save_pipeline.py',
             '--dataset', dataset_str,
             '--method', METHOD,
+            '--split_seed', str(SPLIT_SEED),
         ], check=True)
         
         # Step 3: Run AutoGluon evaluation

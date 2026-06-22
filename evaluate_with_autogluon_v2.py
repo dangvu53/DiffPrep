@@ -104,11 +104,8 @@ def train_autogluon(X_train, y_train, X_val, y_val, X_test, y_test, time_limit, 
     test_data = X_test.copy()
     test_data['label'] = y_test
     
-    # Ensure parent directory exists
-    os.makedirs('D:/temp_autogluon', exist_ok=True)
-    
-    # Create temp directory
-    temp_dir = tempfile.mkdtemp(prefix='autogluon_', dir='D:/temp_autogluon')
+    # Use the system temporary directory on Kaggle/Linux.
+    temp_dir = tempfile.mkdtemp(prefix='autogluon_')
     
     try:
         # Create AutoGluon predictor

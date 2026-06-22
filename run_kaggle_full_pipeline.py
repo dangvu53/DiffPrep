@@ -66,12 +66,13 @@ def run_experiment(dataset, method, split_seed=42, train_seed=1):
         return False, elapsed, str(e)
 
 
-def extract_pipeline(dataset, method):
+def extract_pipeline(dataset, method, split_seed):
     """Extract and save the best pipeline"""
     cmd = [
         'python', 'extract_and_save_pipeline.py',
         '--dataset', dataset,
-        '--method', method
+        '--method', method,
+        '--split_seed', str(split_seed)
     ]
     
     print(f"\n{'='*80}")
@@ -138,7 +139,7 @@ def process_dataset(dataset, method, split_seed, train_seed, autogluon_time):
         return results
     
     # Step 2: Extract pipeline
-    success, elapsed, error = extract_pipeline(dataset, method)
+    success, elapsed, error = extract_pipeline(dataset, method, split_seed)
     results['extract'] = {'success': success, 'time': elapsed, 'error': error}
     if not success:
         return results
@@ -180,10 +181,10 @@ def main():
     args = parser.parse_args()
     
     # Detect Kaggle environment
-    is_kaggle = os.path.exists('/kaggle/working')
-    if is_kaggle:
-        print("🔵 Running on Kaggle environment")
-        os.chdir('/kaggle/working')
+    repo_dir = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(repo_dir)
+    if os.path.exists('/kaggle/working'):
+        print(f"Running on Kaggle from: {repo_dir}")
     
     # Check data directory
     if not os.path.exists('data'):

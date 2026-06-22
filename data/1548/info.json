@@ -1,0 +1,13 @@
+{
+  "label": "label",
+  "dataset_name": "autoUniv-au4-2500",
+  "task_type": "classification",
+  "openml_id": 1548,
+  "num_samples": 2500,
+  "num_features": 100,
+  "num_classes": 3,
+  "num_missing_values": 0,
+  "missing_percentage": 0.0,
+  "num_outlier_samples": 0,
+  "outlier_percentage": 0.0
+}

@@ -1,0 +1,13 @@
+{
+  "label": "label",
+  "dataset_name": "AP_Endometrium_Uterus",
+  "task_type": "classification",
+  "openml_id": 1164,
+  "num_samples": 185,
+  "num_features": 10935,
+  "num_classes": 2,
+  "num_missing_values": 0,
+  "missing_percentage": 0.0,
+  "num_outlier_samples": 185,
+  "outlier_percentage": 100.0
+}
